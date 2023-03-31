@@ -15,6 +15,25 @@ const error = ref(null);
 
 let userId = computed(() => route.params.userId);
 
+let isAdmin = computed(function f() {
+  try {
+    return userData.value["admin"];
+  } catch (e){
+  return false
+}});
+
+let productsOwned = computed(function f() {
+  try {
+    const res = fetch("/products", {
+      method: 'GET',
+      header: {authorization: "Bearer ${" + useAuthStore().token + "}"},
+    })
+    return res.json();
+  } catch (e) {
+    return {};
+  }
+})
+
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString();
 };
@@ -23,14 +42,14 @@ const formatDate = (date) => {
 <template>
   <div>
     <h1 class="text-center" data-test-username>
-      Utilisateur charly
-      <span class="badge rounded-pill bg-primary" data-test-admin>Admin</span>
+      Utilisateur {{user}} {{ userId }} {{ productsOwned }}
+      <span v-if="isAdmin" class="badge rounded-pill bg-primary" data-test-admin>Admin</span>
     </h1>
-    <div class="text-center" data-test-loading>
+    <div v-if="loading" class="text-center" data-test-loading>
       <span class="spinner-border"></span>
       <span>Chargement en cours...</span>
     </div>
-    <div class="alert alert-danger mt-3" data-test-error>
+    <div v-if="error" class="alert alert-danger mt-3" data-test-error>
       Une erreur est survenue
     </div>
     <div data-test-view>
